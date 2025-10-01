@@ -3,6 +3,7 @@ package com.devsuperior.desafio3.services;
 import com.devsuperior.desafio3.dto.ClientDTO;
 import com.devsuperior.desafio3.entities.Client;
 import com.devsuperior.desafio3.repositories.ClientRepository;
+import com.devsuperior.desafio3.services.exceptions.SourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,7 +18,9 @@ public class ClientService {
 
     @Transactional(readOnly = true)
     public ClientDTO findById(Long id) {
-        Client result = clientRepository.findById(id).get();
+        Client result = clientRepository.findById(id).orElseThrow(
+                () -> new SourceNotFoundException("Recurso não encontrado")
+        );
         return new ClientDTO(result);
     }
 
