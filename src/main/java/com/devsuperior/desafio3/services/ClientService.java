@@ -38,6 +38,14 @@ public class ClientService {
     }
 
     @Transactional
+    public ClientDTO update(Long id, ClientDTO clientDTO) {
+        Client clientEntity = clientRepository.getReferenceById(id);
+        copyDtoToEntity(clientDTO, clientEntity);
+        clientEntity = clientRepository.save(clientEntity);
+        return new ClientDTO(clientEntity);
+    }
+
+    @Transactional
     public void deleteById(Long id) {
         clientRepository.deleteById(id);
     }
