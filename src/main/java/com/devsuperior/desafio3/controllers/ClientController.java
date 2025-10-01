@@ -24,6 +24,7 @@ public class ClientController {
         ClientDTO dto = clientService.findById(id);
         return ResponseEntity.ok(dto);
     }
+
     @GetMapping()
     public ResponseEntity<Page<ClientDTO>> findAll(Pageable pageable) {
         Page<ClientDTO> results = clientService.findAll(pageable);
@@ -36,5 +37,11 @@ public class ClientController {
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/id")
                 .buildAndExpand(dto.getId()).toUri();
         return ResponseEntity.created(uri).body(dto);
+    }
+
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+        clientService.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }
