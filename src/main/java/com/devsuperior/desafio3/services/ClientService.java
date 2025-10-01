@@ -3,11 +3,15 @@ package com.devsuperior.desafio3.services;
 import com.devsuperior.desafio3.dto.ClientDTO;
 import com.devsuperior.desafio3.entities.Client;
 import com.devsuperior.desafio3.repositories.ClientRepository;
-import com.devsuperior.desafio3.services.exceptions.SourceNotFoundException;
+import com.devsuperior.desafio3.services.exceptions.DatabaseException;
+import com.devsuperior.desafio3.services.exceptions.ResourceNotFoundException;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -19,7 +23,7 @@ public class ClientService {
     @Transactional(readOnly = true)
     public ClientDTO findById(Long id) {
         Client result = clientRepository.findById(id).orElseThrow(
-                () -> new SourceNotFoundException("Recurso não encontrado")
+                () -> new ResourceNotFoundException("Client not founded.")
         );
         return new ClientDTO(result);
     }
@@ -40,15 +44,26 @@ public class ClientService {
 
     @Transactional
     public ClientDTO update(Long id, ClientDTO clientDTO) {
-        Client clientEntity = clientRepository.getReferenceById(id);
-        copyDtoToEntity(clientDTO, clientEntity);
-        clientEntity = clientRepository.save(clientEntity);
-        return new ClientDTO(clientEntity);
+        try {
+            Client clientEntity = clientRepository.getReferenceById(id);
+            copyDtoToEntity(clientDTO, clientEntity);
+            clientEntity = clientRepository.save(clientEntity);
+            return new ClientDTO(clientEntity);
+        } catch (EntityNotFoundException e ) {
+            throw new ResourceNotFoundException("Client not founded.");
+        }
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.SUPPORTS)
     public void deleteById(Long id) {
-        clientRepository.deleteById(id);
+        if (!clientRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Client not founded.");
+        }
+        try {
+            clientRepository.deleteById(id);
+        } catch (DataIntegrityViolationException e) {
+            throw new DatabaseException("Referential integrity failure.");
+        }
     }
 
     private void copyDtoToEntity(ClientDTO clientDTO, Client client) {
