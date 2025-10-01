@@ -1,14 +1,18 @@
 package com.devsuperior.desafio3.dto;
 
 import com.devsuperior.desafio3.entities.Client;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.PastOrPresent;
 
 import java.time.LocalDate;
 
 public class ClientDTO {
     private Long id;
+    @NotBlank(message = "Required field.")
     private String name;
     private String cpf;
     private Double income;
+    @PastOrPresent(message = "The date of birth cannot be in the future.")
     private LocalDate birthDate;
     private Integer children;
 
